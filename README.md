@@ -56,3 +56,8 @@ El nivel de entrada y las metas finales se fijarán después de un diagnóstico.
 
 **Versión de diseño:** 0.1 — base científica, método, arquitectura y control de calidad documentados.  
 **Siguiente hito:** aplicar el diagnóstico inicial y producir la Semana 1 con audio legal, transcripción, ejercicios y prueba de transferencia.
+
+
+## Aplicación web
+
+La práctica diaria se realiza fuera del chat en **[CANCHA-48 Inglés Auditivo](https://ingles-cancha-48.alexa1tjbc.chatgpt.site)**. Incluye audio a velocidad natural y lenta, texto oculto hasta después de escuchar, explicación de habla conectada, grabación local de la voz y progreso guardado en el dispositivo.
