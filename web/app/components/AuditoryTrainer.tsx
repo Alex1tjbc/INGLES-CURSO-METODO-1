@@ -91,7 +91,7 @@ export default function AuditoryTrainer() {
       }
     } catch { setProgress(EMPTY_PROGRESS); }
     setLoaded(true);
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => undefined);
     setInstalled(window.matchMedia("(display-mode: standalone)").matches);
     const capturePrompt = (event: Event) => { event.preventDefault(); setInstallPrompt(event as InstallPromptEvent); };
     const markInstalled = () => { setInstalled(true); setInstallPrompt(null); };
