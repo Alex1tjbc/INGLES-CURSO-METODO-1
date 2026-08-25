@@ -54,10 +54,10 @@ El nivel de entrada y las metas finales se fijarán después de un diagnóstico.
 
 ## Estado
 
-**Versión de diseño:** 0.1 — base científica, método, arquitectura y control de calidad documentados.  
-**Siguiente hito:** aplicar el diagnóstico inicial y producir la Semana 1 con audio legal, transcripción, ejercicios y prueba de transferencia.
+**Versión:** 1.0 PRO — investigación, currículo de 48 misiones, aplicación independiente y publicación preparada.  
+**Siguiente hito:** ejecutar el diagnóstico y medir la línea base del usuario.
 
 
 ## Aplicación web
 
-La práctica diaria se realiza fuera del chat en **[CANCHA-48 Inglés Auditivo](https://ingles-cancha-48.alexa1tjbc.chatgpt.site)**. Incluye audio a velocidad natural y lenta, texto oculto hasta después de escuchar, explicación de habla conectada, grabación local de la voz y progreso guardado en el dispositivo.
+La práctica diaria se realiza fuera del chat en **[CANCHA-48 PRO](https://alex1tjbc.github.io/INGLES-CURSO-METODO-1/)**. La edición independiente incluye diagnóstico auditivo, 48 conversaciones por misiones, velocidad adaptativa, rescate de errores, respuesta oral, repaso programado y progreso guardado únicamente en el dispositivo. El código fuente está en [`web/`](web/) y la versión publicada en la rama [`gh-pages`](../../tree/gh-pages).
