@@ -20,15 +20,16 @@
     body{overscroll-behavior:none}
     #shell{position:fixed;inset:0;background:var(--bg)}
     #appFrame{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
-    #installBar{position:fixed;z-index:20;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translateX(-50%);width:min(94vw,500px);display:none;align-items:center;gap:10px;padding:10px;border:1px solid #2b5878;border-radius:16px;background:rgba(7,21,34,.97);box-shadow:0 12px 35px rgba(0,0,0,.38);color:var(--text);backdrop-filter:blur(16px)}
-    #installBar.show{display:flex}
-    #installBar img{width:42px;height:42px;flex:none}
-    #installBar .copy{min-width:0;flex:1}
-    #installBar b{display:block;font-size:13px;line-height:1.2;letter-spacing:.02em}
-    #installBar span{display:block;margin-top:3px;font-size:10px;line-height:1.3;color:var(--muted)}
-    #installBtn{min-height:40px;border:0;border-radius:12px;padding:0 13px;background:var(--blue);color:#fff;font-weight:900;font-size:12px}
-    #closeInstall{width:36px;height:36px;border:1px solid var(--line);border-radius:11px;background:#10243b;color:#fff;font-size:18px;font-weight:900}
-    #offline{position:fixed;z-index:30;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);display:none;padding:9px 12px;border-radius:999px;background:#3b2416;color:#ffe2bd;border:1px solid #75502e;font-size:11px;font-weight:850}
+    #installBar,#browserGate{position:fixed;z-index:40;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translateX(-50%);width:min(94vw,500px);display:none;align-items:center;gap:10px;padding:10px;border:1px solid #2b5878;border-radius:16px;background:rgba(7,21,34,.98);box-shadow:0 12px 35px rgba(0,0,0,.45);color:var(--text);backdrop-filter:blur(16px)}
+    #installBar.show,#browserGate.show{display:flex}
+    #installBar img,#browserGate img{width:42px;height:42px;flex:none}
+    #installBar .copy,#browserGate .copy{min-width:0;flex:1}
+    #installBar b,#browserGate b{display:block;font-size:13px;line-height:1.2;letter-spacing:.02em}
+    #installBar span,#browserGate span{display:block;margin-top:3px;font-size:10px;line-height:1.3;color:var(--muted)}
+    #installBtn,#chromeBtn{min-height:40px;border:0;border-radius:12px;padding:0 13px;background:var(--blue);color:#fff;font-weight:900;font-size:12px;white-space:nowrap}
+    #chromeBtn{background:#0f7a56}
+    #closeInstall,#closeBrowser{width:36px;height:36px;border:1px solid var(--line);border-radius:11px;background:#10243b;color:#fff;font-size:18px;font-weight:900;flex:none}
+    #offline{position:fixed;z-index:50;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);display:none;padding:9px 12px;border-radius:999px;background:#3b2416;color:#ffe2bd;border:1px solid #75502e;font-size:11px;font-weight:850}
     #offline.show{display:block}
   </style>
 </head>
@@ -40,6 +41,14 @@
       allow="clipboard-read; clipboard-write; web-share"
       referrerpolicy="strict-origin-when-cross-origin"></iframe>
   </div>
+
+  <div id="browserGate" aria-live="polite">
+    <img src="./icon.svg" alt="">
+    <div class="copy"><b>Abrir en Chrome para instalar</b><span>El navegador interno de ChatGPT no muestra la instalación PWA.</span></div>
+    <button id="chromeBtn" type="button">ABRIR EN CHROME</button>
+    <button id="closeBrowser" type="button" aria-label="Cerrar">×</button>
+  </div>
+
   <div id="installBar" aria-live="polite">
     <img src="./icon.svg" alt="">
     <div class="copy"><b>Instalar ALGOLÍNEA</b><span>Ábrela como app desde tu pantalla de inicio.</span></div>
@@ -47,20 +56,66 @@
     <button id="closeInstall" type="button" aria-label="Cerrar">×</button>
   </div>
   <div id="offline">Sin conexión · los datos MLB requieren internet</div>
+
   <script>
+    const PWA_URL='https://alex1tjbc.github.io/INGLES-CURSO-METODO-1/algolinea-mobile/';
     const bar=document.getElementById('installBar');
+    const browserGate=document.getElementById('browserGate');
     const installBtn=document.getElementById('installBtn');
+    const chromeBtn=document.getElementById('chromeBtn');
     const closeInstall=document.getElementById('closeInstall');
+    const closeBrowser=document.getElementById('closeBrowser');
     const offline=document.getElementById('offline');
     let deferredPrompt=null;
+
     const standalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+    const ua=navigator.userAgent||'';
+    const isAndroid=/Android/i.test(ua);
     const refreshNetwork=()=>offline.classList.toggle('show',!navigator.onLine);
-    window.addEventListener('online',refreshNetwork);window.addEventListener('offline',refreshNetwork);refreshNetwork();
-    window.addEventListener('beforeinstallprompt',(event)=>{event.preventDefault();deferredPrompt=event;if(!standalone()&&sessionStorage.getItem('alg_install_hide')!=='1')bar.classList.add('show');});
-    installBtn.addEventListener('click',async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice}catch(e){}deferredPrompt=null;bar.classList.remove('show');});
-    closeInstall.addEventListener('click',()=>{sessionStorage.setItem('alg_install_hide','1');bar.classList.remove('show');});
-    window.addEventListener('appinstalled',()=>{deferredPrompt=null;bar.classList.remove('show');});
-    if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+    window.addEventListener('online',refreshNetwork);
+    window.addEventListener('offline',refreshNetwork);
+    refreshNetwork();
+
+    window.addEventListener('beforeinstallprompt',(event)=>{
+      event.preventDefault();
+      deferredPrompt=event;
+      browserGate.classList.remove('show');
+      if(!standalone()&&sessionStorage.getItem('alg_install_hide')!=='1')bar.classList.add('show');
+    });
+
+    installBtn.addEventListener('click',async()=>{
+      if(!deferredPrompt)return;
+      deferredPrompt.prompt();
+      try{await deferredPrompt.userChoice}catch(e){}
+      deferredPrompt=null;
+      bar.classList.remove('show');
+    });
+
+    chromeBtn.addEventListener('click',()=>{
+      const intent='intent://alex1tjbc.github.io/INGLES-CURSO-METODO-1/algolinea-mobile/#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(PWA_URL)+';end';
+      window.location.href=intent;
+      setTimeout(()=>{try{window.open(PWA_URL,'_blank')}catch(e){}},900);
+    });
+
+    closeInstall.addEventListener('click',()=>{
+      sessionStorage.setItem('alg_install_hide','1');
+      bar.classList.remove('show');
+    });
+    closeBrowser.addEventListener('click',()=>browserGate.classList.remove('show'));
+
+    window.addEventListener('appinstalled',()=>{
+      deferredPrompt=null;
+      bar.classList.remove('show');
+      browserGate.classList.remove('show');
+    });
+
+    setTimeout(()=>{
+      if(isAndroid&&!standalone()&&!deferredPrompt)browserGate.classList.add('show');
+    },1400);
+
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+    }
   </script>
 </body>
 </html>
