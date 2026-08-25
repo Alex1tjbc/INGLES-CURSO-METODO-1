@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#06101c">
+  <meta name="background-color" content="#06101c">
+  <meta name="description" content="ALGOLÍNEA · MLB Intelligence · acceso móvil privado">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ALGOLÍNEA">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  <title>ALGOLÍNEA · MLB</title>
+  <style>
+    :root{color-scheme:dark;--bg:#06101c;--panel:#0b1a2b;--line:#1f3d5c;--text:#f7fbff;--cyan:#31d4ff;--blue:#4d8dff;--muted:#91a9bf}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{overscroll-behavior:none}
+    #shell{position:fixed;inset:0;background:var(--bg)}
+    #appFrame{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
+    #installBar{position:fixed;z-index:20;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translateX(-50%);width:min(94vw,500px);display:none;align-items:center;gap:10px;padding:10px;border:1px solid #2b5878;border-radius:16px;background:rgba(7,21,34,.97);box-shadow:0 12px 35px rgba(0,0,0,.38);color:var(--text);backdrop-filter:blur(16px)}
+    #installBar.show{display:flex}
+    #installBar img{width:42px;height:42px;flex:none}
+    #installBar .copy{min-width:0;flex:1}
+    #installBar b{display:block;font-size:13px;line-height:1.2;letter-spacing:.02em}
+    #installBar span{display:block;margin-top:3px;font-size:10px;line-height:1.3;color:var(--muted)}
+    #installBtn{min-height:40px;border:0;border-radius:12px;padding:0 13px;background:var(--blue);color:#fff;font-weight:900;font-size:12px}
+    #closeInstall{width:36px;height:36px;border:1px solid var(--line);border-radius:11px;background:#10243b;color:#fff;font-size:18px;font-weight:900}
+    #offline{position:fixed;z-index:30;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);display:none;padding:9px 12px;border-radius:999px;background:#3b2416;color:#ffe2bd;border:1px solid #75502e;font-size:11px;font-weight:850}
+    #offline.show{display:block}
+  </style>
+</head>
+<body>
+  <div id="shell">
+    <iframe id="appFrame"
+      title="ALGOLÍNEA MOBILE"
+      src="https://script.google.com/macros/s/AKfycbxJoV0fJPmToY5QZ0cs7vE4glmVu7Z1Ta7ozEOYFztdjvdChG1lVzyLy1zpWOKqbuRd8A/exec"
+      allow="clipboard-read; clipboard-write; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  </div>
+  <div id="installBar" aria-live="polite">
+    <img src="./icon.svg" alt="">
+    <div class="copy"><b>Instalar ALGOLÍNEA</b><span>Ábrela como app desde tu pantalla de inicio.</span></div>
+    <button id="installBtn" type="button">INSTALAR</button>
+    <button id="closeInstall" type="button" aria-label="Cerrar">×</button>
+  </div>
+  <div id="offline">Sin conexión · los datos MLB requieren internet</div>
+  <script>
+    const bar=document.getElementById('installBar');
+    const installBtn=document.getElementById('installBtn');
+    const closeInstall=document.getElementById('closeInstall');
+    const offline=document.getElementById('offline');
+    let deferredPrompt=null;
+    const standalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+    const refreshNetwork=()=>offline.classList.toggle('show',!navigator.onLine);
+    window.addEventListener('online',refreshNetwork);window.addEventListener('offline',refreshNetwork);refreshNetwork();
+    window.addEventListener('beforeinstallprompt',(event)=>{event.preventDefault();deferredPrompt=event;if(!standalone()&&sessionStorage.getItem('alg_install_hide')!=='1')bar.classList.add('show');});
+    installBtn.addEventListener('click',async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice}catch(e){}deferredPrompt=null;bar.classList.remove('show');});
+    closeInstall.addEventListener('click',()=>{sessionStorage.setItem('alg_install_hide','1');bar.classList.remove('show');});
+    window.addEventListener('appinstalled',()=>{deferredPrompt=null;bar.classList.remove('show');});
+    if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  </script>
+</body>
+</html>
