@@ -2,15 +2,15 @@
   "name": "CANCHA-48 PRO Inglés Auditivo",
   "short_name": "CANCHA-48 PRO",
   "description": "Entrenamiento auditivo por misiones para adultos mexicanos.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#07131d",
   "theme_color": "#07131d",
   "lang": "es-MX",
   "icons": [
     {
-      "src": "/favicon.svg",
+      "src": "./favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
