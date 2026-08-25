@@ -1,0 +1,20 @@
+{
+  "name": "ALGOLÍNEA · MLB Intelligence",
+  "short_name": "ALGOLÍNEA",
+  "description": "Consulta móvil privada de ALGOLÍNEA MLB Intelligence.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#06101c",
+  "theme_color": "#06101c",
+  "lang": "es-MX",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
