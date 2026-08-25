@@ -6,13 +6,13 @@ Adulto mexicano de 48 años o más, principiante o básico, que estudia de forma
 
 ## Carga de trabajo
 
-- 8 semanas.
+- 13 semanas.
 - 6 misiones por semana.
 - 18 a 25 minutos por misión.
 - Cinco misiones de avance y una misión integradora o de repaso.
-- 48 conversaciones de cuatro turnos.
+- 78 conversaciones de cuatro turnos.
 
-El ciclo representa aproximadamente 16 a 20 horas guiadas. No sustituye las horas de exposición y conversación necesarias para alcanzar un nivel general de dominio.
+El ciclo representa aproximadamente 26 a 33 horas guiadas. No sustituye las horas de exposición y conversación necesarias para alcanzar un nivel general de dominio.
 
 ## Arquitectura de cada misión
 
@@ -36,6 +36,11 @@ El ciclo representa aproximadamente 16 a 20 horas guiadas. No sustituye las hora
 | 6 | Vida diaria | Comida, direcciones, citas, hotel y viaje |
 | 7 | Habla conectada | Reconocer reducciones dentro de conversaciones |
 | 8 | Integración profesional | Entrevista, prioridades múltiples y transferencia |
+| 9 | Juego completo | Integrar oído, reparación y respuesta en situaciones nuevas |
+| 10 | Comer y comprar | Pizza, restaurante, zapatos, tallas, colores y cambios |
+| 11 | Ubicación, rutas y cuerpo | Domicilios, indicaciones, partes del cuerpo y preposiciones |
+| 12 | Verbos en el tiempo | To be, pasado regular e irregular, will y going to |
+| 13 | Vida real integrada | Transferencia a conversaciones nuevas de comida, compras, rutas y salud |
 
 ## Medición
 
@@ -45,4 +50,3 @@ El ciclo representa aproximadamente 16 a 20 horas guiadas. No sustituye las hora
 - Autoevaluación de producción oral.
 - Cola de repaso por error o dependencia del texto.
 - Evaluación de transferencia con situaciones nuevas al final.
-

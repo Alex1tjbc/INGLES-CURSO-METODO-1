@@ -26,6 +26,7 @@ export type Mission = {
   responsePrompt: string;
   modelResponse: string;
   modelResponseEs: string;
+  languageFocus?: string;
 };
 
 export type TrainingWeek = {
@@ -549,6 +550,198 @@ const RAW_WEEKS: Array<Omit<TrainingWeek, "number" | "missions"> & { missions: R
         question: "¿Qué debe enviar Marco antes de la una?", options: ["Una cotización", "El plan de recuperación", "La factura"], answer: 1,
         chunks: [chunk("is still down", "iz-still-DOWN", "sigue detenida"), chunk("can only deliver half", "kin-only-de-LIV-er-half", "sólo puede entregar la mitad"), chunk("recovery plan", "ree-COV-er-y-plan", "plan de recuperación")],
         responsePrompt: "Resume problema, decisión y plazo.", modelResponse: "Machine four is down, so I'll check machine two and send a recovery plan before one.", modelResponseEs: "La máquina cuatro está detenida; revisaré máquina dos y enviaré un plan antes de la una."
+      },
+    ],
+  },
+  {
+    title: "Comer y comprar de verdad",
+    objective: "Resolver pedidos, tallas, colores, precios y cambios usando frases completas de la vida diaria.",
+    missions: [
+      {
+        title: "Pedir una pizza por teléfono", context: "Llamas a una pizzería para hacer un pedido.", objective: "Pedir tamaño, ingredientes y confirmar el precio.", languageFocus: "I'd like… · Can I get…? · with / without",
+        dialogue: [line("A", "Clerk", "Thanks for calling Tony's Pizza. What can I get for you?", "Gracias por llamar a Tony's Pizza. ¿Qué te puedo ofrecer?"), line("B", "Marco", "I'd like a large pepperoni pizza with extra cheese, please.", "Quisiera una pizza grande de pepperoni con queso extra, por favor."), line("A", "Clerk", "Sure. Is that for pickup or delivery?", "Claro. ¿Es para recoger o para entrega?"), line("B", "Marco", "Delivery, please. How much is the total?", "Entrega, por favor. ¿Cuánto es el total?")],
+        question: "¿Qué tipo de pizza pidió Marco?", options: ["Grande de pepperoni con queso extra", "Mediana vegetariana", "Grande sin queso"], answer: 0,
+        chunks: [chunk("What can I get for you?", "whad-kin-eye-GET-fer-ya", "¿Qué te puedo ofrecer?"), chunk("I'd like a", "eye-d-LIKE-uh", "Quisiera una"), chunk("pickup or delivery", "PICK-up-er-de-LIV-er-y", "recoger o entrega")],
+        responsePrompt: "Pide una pizza mediana de queso, sin cebolla.", modelResponse: "I'd like a medium cheese pizza without onions, please.", modelResponseEs: "Quisiera una pizza mediana de queso, sin cebolla, por favor."
+      },
+      {
+        title: "Dar el domicilio", context: "La pizzería necesita confirmar dónde entregar.", objective: "Decir calle, número y una referencia sencilla.", languageFocus: "at + dirección · on + calle · next to",
+        dialogue: [line("A", "Clerk", "What's the delivery address?", "¿Cuál es el domicilio de entrega?"), line("B", "Marco", "It's 1840 Oak Street, apartment twelve.", "Es Oak Street 1840, departamento 12."), line("A", "Clerk", "Is that the building next to the pharmacy?", "¿Es el edificio junto a la farmacia?"), line("B", "Marco", "Yes. Please call me when the driver is outside.", "Sí. Por favor llámame cuando el repartidor esté afuera.")],
+        question: "¿Cuál es la referencia?", options: ["Frente al banco", "Junto a la farmacia", "Detrás del restaurante"], answer: 1,
+        chunks: [chunk("What's the address?", "whats-thee-ADDRESS", "¿Cuál es el domicilio?"), chunk("next to the", "NEXT-tuh-thuh", "junto a"), chunk("when the driver's outside", "when-thuh-driverz-out-SIDE", "cuando el repartidor esté afuera")],
+        responsePrompt: "Da una dirección y menciona que está frente al banco.", modelResponse: "It's 25 Pine Avenue, across from the bank.", modelResponseEs: "Es Pine Avenue 25, frente al banco."
+      },
+      {
+        title: "Comprar zapatos", context: "Buscas zapatos cómodos en una tienda.", objective: "Preguntar por talla, color y disponibilidad.", languageFocus: "Do you have…? · in size / in black",
+        dialogue: [line("A", "Clerk", "Hi. Are you looking for anything in particular?", "Hola. ¿Buscas algo en particular?"), line("B", "Marco", "Yes, I need comfortable black shoes for work.", "Sí, necesito zapatos negros cómodos para el trabajo."), line("A", "Clerk", "We have these in black and brown. What size are you?", "Tenemos estos en negro y café. ¿Qué talla eres?"), line("B", "Marco", "I'm a size ten. Can I try on the black pair?", "Soy talla diez. ¿Puedo probarme el par negro?")],
+        question: "¿Qué zapatos quiere probarse?", options: ["Cafés talla 9", "Negros talla 10", "Negros talla 12"], answer: 1,
+        chunks: [chunk("looking for", "LOOK-ing-fer", "buscando"), chunk("What size are you?", "what-SIZE-er-ya", "¿Qué talla eres?"), chunk("try on", "TRY-on", "probarse")],
+        responsePrompt: "Pregunta si tienen ese modelo en azul, talla nueve.", modelResponse: "Do you have this style in blue, size nine?", modelResponseEs: "¿Tienen este modelo en azul, talla nueve?"
+      },
+      {
+        title: "¿Te quedan bien?", context: "Te pruebas los zapatos y la dependienta pregunta cómo se sienten.", objective: "Describir comodidad, talla y partes del zapato.", languageFocus: "They are… · They feel… · too + adjetivo",
+        dialogue: [line("A", "Clerk", "How do they feel?", "¿Cómo se sienten?"), line("B", "Marco", "The left shoe feels good, but the right one is too tight.", "El zapato izquierdo se siente bien, pero el derecho está demasiado apretado."), line("A", "Clerk", "I can bring you a half size larger.", "Puedo traerte media talla más grande."), line("B", "Marco", "That would be great. The color is perfect.", "Eso estaría muy bien. El color es perfecto.")],
+        question: "¿Cuál zapato está apretado?", options: ["El izquierdo", "El derecho", "Los dos"], answer: 1,
+        chunks: [chunk("How do they feel?", "how-duh-they-FEEL", "¿Cómo se sienten?"), chunk("too tight", "too-TIGHT", "demasiado apretado"), chunk("half size larger", "half-size-LAR-ger", "media talla más grande")],
+        responsePrompt: "Di que están cómodos, pero un poco grandes.", modelResponse: "They're comfortable, but they're a little too big.", modelResponseEs: "Son cómodos, pero están un poco grandes."
+      },
+      {
+        title: "Cambiar una compra", context: "Regresas a la tienda con unos zapatos que no te quedaron.", objective: "Explicar qué compraste y pedir un cambio.", languageFocus: "I bought… · They didn't fit · I'd like to exchange…",
+        dialogue: [line("A", "Clerk", "How can I help you today?", "¿Cómo puedo ayudarte hoy?"), line("B", "Marco", "I bought these shoes yesterday, but they didn't fit.", "Compré estos zapatos ayer, pero no me quedaron."), line("A", "Clerk", "No problem. Would you like a refund or an exchange?", "No hay problema. ¿Quieres un reembolso o un cambio?"), line("B", "Marco", "I'd like to exchange them for a larger size.", "Quisiera cambiarlos por una talla más grande.")],
+        question: "¿Qué quiere Marco?", options: ["Un reembolso", "Una talla más grande", "Otro color más pequeño"], answer: 1,
+        chunks: [chunk("I bought these", "eye-BAWT-theez", "Compré estos"), chunk("didn't fit", "DID-nt-FIT", "no quedaron"), chunk("exchange them for", "ex-CHANGE-em-fer", "cambiarlos por")],
+        responsePrompt: "Di que compraste la camisa ayer y quieres otro color.", modelResponse: "I bought this shirt yesterday. I'd like to exchange it for another color.", modelResponseEs: "Compré esta camisa ayer. Quisiera cambiarla por otro color."
+      },
+      {
+        title: "Misión: pedido completo", context: "Pides comida, eliges una opción y corriges un detalle.", objective: "Mantener una conversación natural de principio a fin.", languageFocus: "I'll have… · Could you make it…? · That's all",
+        dialogue: [line("A", "Server", "Are you ready to order, or do you need another minute?", "¿Estás listo para ordenar o necesitas otro minuto?"), line("B", "Marco", "I'm ready. I'll have the chicken sandwich and a small salad.", "Estoy listo. Quiero el sándwich de pollo y una ensalada pequeña."), line("A", "Server", "Would you like fries with that?", "¿Quieres papas con eso?"), line("B", "Marco", "No, thanks. Could you make the salad without tomatoes?", "No, gracias. ¿Podrías preparar la ensalada sin tomates?")],
+        question: "¿Qué cambio pidió?", options: ["Sin pollo", "Sin tomates", "Con papas"], answer: 1,
+        chunks: [chunk("Are you ready to order?", "arya-ready-duh-ORDER", "¿Estás listo para ordenar?"), chunk("I'll have the", "ahl-HAVE-thuh", "Quiero el/la"), chunk("Would you like", "wood-ja-LIKE", "¿Te gustaría?")],
+        responsePrompt: "Ordena una hamburguesa sin cebolla y agua.", modelResponse: "I'll have a hamburger without onions and a glass of water, please.", modelResponseEs: "Quiero una hamburguesa sin cebolla y un vaso de agua, por favor."
+      },
+    ],
+  },
+  {
+    title: "Ubicación, rutas y cuerpo",
+    objective: "Preguntar domicilios, explicar trayectos y describir ubicaciones y molestias físicas.",
+    missions: [
+      {
+        title: "Preguntar un domicilio", context: "Buscas una clínica en una zona que no conoces.", objective: "Preguntar dónde está y confirmar una referencia.", languageFocus: "Where is…? · Is it near…? · across from",
+        dialogue: [line("A", "Marco", "Excuse me, where's the Green Valley Clinic?", "Disculpe, ¿dónde está la clínica Green Valley?"), line("B", "Local", "It's on Pine Street, across from the library.", "Está en Pine Street, frente a la biblioteca."), line("A", "Marco", "Is it near the traffic light?", "¿Está cerca del semáforo?"), line("B", "Local", "Yes. It's the white building on the corner.", "Sí. Es el edificio blanco en la esquina.")],
+        question: "¿Cómo identifica Marco la clínica?", options: ["Edificio blanco en la esquina", "Edificio rojo junto al banco", "Casa azul detrás del parque"], answer: 0,
+        chunks: [chunk("where's the", "WHERE-zthuh", "¿dónde está?"), chunk("across from", "uh-CROSS-frum", "frente a"), chunk("on the corner", "on-thuh-COR-ner", "en la esquina")],
+        responsePrompt: "Pregunta dónde está la farmacia y si está cerca del banco.", modelResponse: "Excuse me, where's the pharmacy? Is it near the bank?", modelResponseEs: "Disculpe, ¿dónde está la farmacia? ¿Está cerca del banco?"
+      },
+      {
+        title: "Explicar cómo llegar", context: "Un visitante te pide la ruta a una oficina.", objective: "Dar pasos cortos en el orden correcto.", languageFocus: "Go straight · turn left/right · at the light",
+        dialogue: [line("A", "Visitor", "How do I get to the main office from here?", "¿Cómo llego a la oficina principal desde aquí?"), line("B", "Marco", "Go straight for two blocks and turn left at the light.", "Sigue derecho dos cuadras y da vuelta a la izquierda en el semáforo."), line("A", "Visitor", "Is it before or after the gas station?", "¿Está antes o después de la gasolinera?"), line("B", "Marco", "After it. The office will be on your right.", "Después. La oficina estará a tu derecha.")],
+        question: "¿Dónde debe girar?", options: ["A la derecha en la gasolinera", "A la izquierda en el semáforo", "En la segunda oficina"], answer: 1,
+        chunks: [chunk("How do I get to", "how-duh-eye-GET-tuh", "¿Cómo llego a?"), chunk("turn left at", "turn-LEFT-at", "gira a la izquierda en"), chunk("on your right", "on-yer-RIGHT", "a tu derecha")],
+        responsePrompt: "Indica: derecho una cuadra, derecha en la esquina, banco a la izquierda.", modelResponse: "Go straight for one block, turn right at the corner, and the bank is on your left.", modelResponseEs: "Sigue derecho una cuadra, gira a la derecha en la esquina y el banco está a tu izquierda."
+      },
+      {
+        title: "Corregir una ruta", context: "El conductor tomó una calle equivocada.", objective: "Detener, corregir y reorientar con calma.", languageFocus: "You passed… · go back · take the next…",
+        dialogue: [line("A", "Driver", "Is the hotel near this shopping center?", "¿El hotel está cerca de este centro comercial?"), line("B", "Marco", "We passed it. Go back to the last intersection.", "Ya lo pasamos. Regresa a la última intersección."), line("A", "Driver", "Should I take the first right?", "¿Debo tomar la primera a la derecha?"), line("B", "Marco", "Yes. Then the hotel is on the left, behind the restaurant.", "Sí. Después el hotel está a la izquierda, detrás del restaurante.")],
+        question: "¿Dónde está el hotel?", options: ["Detrás del restaurante", "Dentro del centro comercial", "Frente a la gasolinera"], answer: 0,
+        chunks: [chunk("We passed it", "we-PASST-it", "Ya lo pasamos"), chunk("go back to", "go-BACK-tuh", "regresa a"), chunk("behind the", "be-HIND-thuh", "detrás de")],
+        responsePrompt: "Di que ya pasaron el lugar y deben regresar al semáforo.", modelResponse: "We passed it. Please go back to the traffic light.", modelResponseEs: "Ya lo pasamos. Por favor regresa al semáforo."
+      },
+      {
+        title: "Partes del cuerpo en la farmacia", context: "Explicas una molestia para pedir ayuda.", objective: "Nombrar la parte del cuerpo, duración e intensidad.", languageFocus: "My … hurts · I have a… · for two days",
+        dialogue: [line("A", "Pharmacist", "What seems to be the problem?", "¿Cuál parece ser el problema?"), line("B", "Marco", "My throat hurts, and I have a headache.", "Me duele la garganta y tengo dolor de cabeza."), line("A", "Pharmacist", "How long have you felt this way?", "¿Desde cuándo te sientes así?"), line("B", "Marco", "For two days. I don't have a fever.", "Desde hace dos días. No tengo fiebre.")],
+        question: "¿Qué molestias tiene Marco?", options: ["Dolor de garganta y cabeza", "Dolor de espalda y fiebre", "Dolor de rodilla"], answer: 0,
+        chunks: [chunk("What seems to be", "what-SEEMS-tuh-be", "¿Cuál parece ser?"), chunk("My throat hurts", "my-THROAT-hurts", "Me duele la garganta"), chunk("How long have you", "how-LONG-uv-ya", "¿Desde cuándo?")],
+        responsePrompt: "Di que te duele la espalda desde ayer.", modelResponse: "My back has hurt since yesterday.", modelResponseEs: "Me duele la espalda desde ayer."
+      },
+      {
+        title: "Over, under, in, on, at", context: "Buscan herramientas antes de comenzar un trabajo.", objective: "Ubicar objetos sin señalar físicamente.", languageFocus: "over / under / in / on / at",
+        dialogue: [line("A", "Luis", "Where did you put the safety glasses?", "¿Dónde pusiste los lentes de seguridad?"), line("B", "Marco", "They're in the blue box, under the workbench.", "Están en la caja azul, debajo del banco de trabajo."), line("A", "Luis", "And the checklist?", "¿Y la lista de verificación?"), line("B", "Marco", "It's on the wall, right over the first-aid kit.", "Está en la pared, justo sobre el botiquín.")],
+        question: "¿Dónde están los lentes?", options: ["Sobre la pared", "En la caja azul bajo el banco", "Dentro del botiquín"], answer: 1,
+        chunks: [chunk("Where did you put", "where-did-ja-PUT", "¿Dónde pusiste?"), chunk("under the", "UN-der-thuh", "debajo de"), chunk("right over", "right-OH-ver", "justo sobre")],
+        responsePrompt: "Di que las llaves están sobre la mesa, junto al teléfono.", modelResponse: "The keys are on the table, next to the phone.", modelResponseEs: "Las llaves están sobre la mesa, junto al teléfono."
+      },
+      {
+        title: "Misión: guiar a una persona", context: "Das una ruta con entrada, piso y ubicación final.", objective: "Combinar movimiento y preposiciones sin traducir palabra por palabra.", languageFocus: "through · up/down · on the second floor · at the end",
+        dialogue: [line("A", "Guest", "I'm at the front entrance. Where's the training room?", "Estoy en la entrada principal. ¿Dónde está el salón de capacitación?"), line("B", "Marco", "Walk through the lobby and take the stairs to the second floor.", "Cruza el vestíbulo y sube por las escaleras al segundo piso."), line("A", "Guest", "Do I turn left at the top?", "¿Giro a la izquierda al llegar arriba?"), line("B", "Marco", "Yes. It's the last door on the right, next to the elevator.", "Sí. Es la última puerta a la derecha, junto al elevador.")],
+        question: "¿Dónde está el salón?", options: ["Primer piso junto a recepción", "Segunda planta, última puerta a la derecha", "Detrás de la entrada"], answer: 1,
+        chunks: [chunk("walk through", "walk-THROO", "cruza/camina por"), chunk("at the top", "at-thuh-TOP", "al llegar arriba"), chunk("next to the elevator", "next-tuh-thee-EL-uh-vay-ter", "junto al elevador")],
+        responsePrompt: "Da una ruta corta desde la entrada hasta el elevador.", modelResponse: "Walk through the lobby. The elevator is at the end, on your left.", modelResponseEs: "Cruza el vestíbulo. El elevador está al final, a tu izquierda."
+      },
+    ],
+  },
+  {
+    title: "Verbos en el tiempo real",
+    objective: "Usar to be, pasado y futuro para contar qué ocurrió y decir qué ocurrirá después.",
+    missions: [
+      {
+        title: "To be en el presente", context: "Te presentas con un nuevo vecino.", objective: "Usar am, is y are dentro de información personal.", languageFocus: "I am · you are · he/she/it is · we/they are",
+        dialogue: [line("A", "Neighbor", "Hi, I'm Rachel. Are you new to the building?", "Hola, soy Rachel. ¿Eres nuevo en el edificio?"), line("B", "Marco", "Yes, I am. My family and I are in apartment eight.", "Sí. Mi familia y yo estamos en el departamento ocho."), line("A", "Rachel", "I'm in apartment ten. The neighbors are very friendly.", "Estoy en el departamento diez. Los vecinos son muy amables."), line("B", "Marco", "That's good to hear. The building is really quiet.", "Qué bueno saberlo. El edificio es muy tranquilo.")],
+        question: "¿Dónde vive Marco?", options: ["Departamento 8", "Departamento 10", "Casa 8"], answer: 0,
+        chunks: [chunk("I'm Rachel", "aim-RAY-chul", "Soy Rachel"), chunk("Are you new?", "arya-NEW", "¿Eres nuevo?"), chunk("The neighbors are", "thuh-NEIGH-burz-er", "Los vecinos son")],
+        responsePrompt: "Preséntate y di dónde estás o vives.", modelResponse: "Hi, I'm Marco. I'm new here, and I'm in apartment eight.", modelResponseEs: "Hola, soy Marco. Soy nuevo aquí y estoy en el departamento ocho."
+      },
+      {
+        title: "To be en pasado", context: "Explicas por qué llegaste tarde a una cita.", objective: "Diferenciar was y were en una historia corta.", languageFocus: "I/he/she/it was · you/we/they were",
+        dialogue: [line("A", "Receptionist", "Your appointment was at nine. Were you stuck in traffic?", "Tu cita era a las nueve. ¿Estabas atrapado en el tráfico?"), line("B", "Marco", "Yes. The roads were packed, and there was an accident.", "Sí. Las calles estaban llenas y hubo un accidente."), line("A", "Receptionist", "The doctor was delayed too, so you're fine.", "El doctor también estaba retrasado, así que no hay problema."), line("B", "Marco", "That's a relief. I was worried.", "Qué alivio. Estaba preocupado.")],
+        question: "¿Por qué llegó tarde Marco?", options: ["La cita cambió", "Había tráfico y un accidente", "El doctor canceló"], answer: 1,
+        chunks: [chunk("appointment was", "uh-POINT-ment-wuz", "la cita era"), chunk("roads were packed", "roads-wer-PACKT", "las calles estaban llenas"), chunk("I was worried", "eye-wuz-WOR-eed", "estaba preocupado")],
+        responsePrompt: "Di que estabas en el trabajo y las calles estaban llenas.", modelResponse: "I was at work, and the roads were very busy.", modelResponseEs: "Estaba en el trabajo y las calles estaban muy transitadas."
+      },
+      {
+        title: "Pasado regular", context: "Cuentas lo que hiciste ayer después del trabajo.", objective: "Reconocer y producir verbos regulares terminados en -ed.", languageFocus: "worked · called · ordered · watched",
+        dialogue: [line("A", "Sam", "What did you do after work yesterday?", "¿Qué hiciste ayer después del trabajo?"), line("B", "Marco", "I called my brother, ordered dinner, and watched a movie.", "Llamé a mi hermano, pedí la cena y vi una película."), line("A", "Sam", "That sounds relaxing. Did you cook anything?", "Eso suena relajante. ¿Cocinaste algo?"), line("B", "Marco", "No, I worked late, so I ordered pizza.", "No, trabajé tarde, así que pedí pizza.")],
+        question: "¿Por qué pidió pizza?", options: ["Trabajó tarde", "No tenía teléfono", "Visitó a su hermano"], answer: 0,
+        chunks: [chunk("What did you do?", "whad-did-ja-DO", "¿Qué hiciste?"), chunk("called my brother", "CALLED-my-BRO-ther", "llamé a mi hermano"), chunk("worked late", "workt-LATE", "trabajé tarde")],
+        responsePrompt: "Cuenta tres cosas que hiciste ayer usando verbos en pasado.", modelResponse: "Yesterday I worked, called a friend, and watched television.", modelResponseEs: "Ayer trabajé, llamé a un amigo y vi televisión."
+      },
+      {
+        title: "Pasado irregular", context: "Hablas de una compra del fin de semana.", objective: "Usar went, bought, got y had en una secuencia real.", languageFocus: "go→went · buy→bought · get→got · have→had",
+        dialogue: [line("A", "Lisa", "Did you find the shoes you wanted?", "¿Encontraste los zapatos que querías?"), line("B", "Marco", "Yes. I went downtown and bought a black pair.", "Sí. Fui al centro y compré un par negro."), line("A", "Lisa", "Did you get a good price?", "¿Conseguiste un buen precio?"), line("B", "Marco", "I did. They had a twenty-percent discount.", "Sí. Tenían veinte por ciento de descuento.")],
+        question: "¿Qué compró Marco?", options: ["Una camisa azul", "Un par de zapatos negros", "Zapatos cafés sin descuento"], answer: 1,
+        chunks: [chunk("Did you find", "did-ja-FIND", "¿Encontraste?"), chunk("went downtown", "went-DOWN-town", "fui al centro"), chunk("bought a black pair", "bawt-uh-BLACK-pair", "compré un par negro")],
+        responsePrompt: "Di que fuiste a la tienda y compraste una camisa azul.", modelResponse: "I went to the store and bought a blue shirt.", modelResponseEs: "Fui a la tienda y compré una camisa azul."
+      },
+      {
+        title: "Futuro con will", context: "Prometes resolver un problema de entrega.", objective: "Hacer decisiones y promesas inmediatas.", languageFocus: "I will / I'll · Will you…? · won't",
+        dialogue: [line("A", "Customer", "My order still isn't here. Can you check it?", "Mi pedido todavía no llega. ¿Puedes revisarlo?"), line("B", "Marco", "Of course. I'll call the driver right now.", "Claro. Llamaré al conductor ahora mismo."), line("A", "Customer", "Will you let me know before five?", "¿Me avisarás antes de las cinco?"), line("B", "Marco", "Yes, I will. I won't leave until I have an answer.", "Sí. No me iré hasta tener una respuesta.")],
+        question: "¿Qué hará Marco primero?", options: ["Cancelará la orden", "Llamará al conductor", "Esperará hasta mañana"], answer: 1,
+        chunks: [chunk("I'll call", "ahl-CALL", "llamaré"), chunk("Will you let me know?", "will-ya-let-me-KNOW", "¿Me avisarás?"), chunk("I won't leave", "eye-WOANT-leave", "No me iré")],
+        responsePrompt: "Promete llamar y enviar una actualización antes de las cuatro.", modelResponse: "I'll call now, and I'll send you an update before four.", modelResponseEs: "Llamaré ahora y te enviaré una actualización antes de las cuatro."
+      },
+      {
+        title: "Planes con going to", context: "Hablas de tus planes para el fin de semana.", objective: "Diferenciar plan previo de decisión inmediata.", languageFocus: "am/is/are going to + verbo",
+        dialogue: [line("A", "Rachel", "What are you going to do this weekend?", "¿Qué vas a hacer este fin de semana?"), line("B", "Marco", "I'm going to visit my sister on Saturday.", "Voy a visitar a mi hermana el sábado."), line("A", "Rachel", "Are you going to drive there?", "¿Vas a manejar hasta allá?"), line("B", "Marco", "No, we're going to take the train in the morning.", "No, vamos a tomar el tren por la mañana.")],
+        question: "¿Cómo viajarán?", options: ["En automóvil", "En tren", "En avión"], answer: 1,
+        chunks: [chunk("What are you going to", "whadder-ya-GON-na", "¿Qué vas a?"), chunk("I'm going to visit", "aim-GON-na-VIS-it", "Voy a visitar"), chunk("take the train", "take-thuh-TRAIN", "tomar el tren")],
+        responsePrompt: "Di que vas a comprar zapatos mañana.", modelResponse: "I'm going to buy shoes tomorrow.", modelResponseEs: "Voy a comprar zapatos mañana."
+      },
+    ],
+  },
+  {
+    title: "Vida real integrada",
+    objective: "Combinar comida, compras, rutas, cuerpo, espacio y tiempos verbales en conversaciones menos predecibles.",
+    missions: [
+      {
+        title: "La pizza llegó equivocada", context: "Recibiste un pedido distinto y llamas para corregirlo.", objective: "Explicar el pasado y acordar una solución futura.", languageFocus: "I ordered… · You sent… · We'll replace…",
+        dialogue: [line("A", "Clerk", "Tony's Pizza. How can I help?", "Tony's Pizza. ¿Cómo puedo ayudar?"), line("B", "Marco", "I ordered pepperoni, but you sent a vegetable pizza.", "Pedí pepperoni, pero enviaron una pizza vegetariana."), line("A", "Clerk", "I'm sorry about that. We'll replace it right away.", "Lamento eso. La reemplazaremos de inmediato."), line("B", "Marco", "Thank you. Will the new pizza be here before eight?", "Gracias. ¿La nueva pizza llegará antes de las ocho?")],
+        question: "¿Cuál fue el problema?", options: ["La pizza llegó fría", "Enviaron la pizza equivocada", "Faltó la bebida"], answer: 1,
+        chunks: [chunk("I ordered", "eye-OR-derd", "Pedí"), chunk("you sent", "ya-SENT", "enviaron"), chunk("right away", "right-uh-WAY", "de inmediato")],
+        responsePrompt: "Di que pediste queso y recibiste pepperoni.", modelResponse: "I ordered cheese, but I received pepperoni.", modelResponseEs: "Pedí queso, pero recibí pepperoni."
+      },
+      {
+        title: "Zapatos para una entrevista", context: "Necesitas un modelo específico y comparas dos opciones.", objective: "Combinar color, talla, uso y futuro.", languageFocus: "These are… · Those were… · I'll take…",
+        dialogue: [line("A", "Clerk", "These black shoes are formal, but those brown ones are more comfortable.", "Estos zapatos negros son formales, pero aquellos cafés son más cómodos."), line("B", "Marco", "I have an interview tomorrow, so I need something formal.", "Tengo una entrevista mañana, así que necesito algo formal."), line("A", "Clerk", "The black pair is available in your size.", "El par negro está disponible en tu talla."), line("B", "Marco", "Great. I'll take the black ones.", "Muy bien. Me llevaré los negros.")],
+        question: "¿Cuáles comprará?", options: ["Los cafés", "Los negros", "Ninguno"], answer: 1,
+        chunks: [chunk("those brown ones", "those-BROWN-wunz", "aquellos cafés"), chunk("in your size", "in-yer-SIZE", "en tu talla"), chunk("I'll take", "ahl-TAKE", "Me llevaré")],
+        responsePrompt: "Elige los zapatos cafés porque son más cómodos.", modelResponse: "I'll take the brown ones because they're more comfortable.", modelResponseEs: "Me llevaré los cafés porque son más cómodos."
+      },
+      {
+        title: "Entrega en un domicilio difícil", context: "Guías al repartidor desde la avenida hasta tu casa.", objective: "Dar una ruta y describir colores y referencias.", languageFocus: "turn at · drive past · between · across from",
+        dialogue: [line("A", "Driver", "I'm on Lake Avenue, but I can't find number forty-two.", "Estoy en Lake Avenue, pero no encuentro el número 42."), line("B", "Marco", "Drive past the school and turn right at the blue store.", "Pasa la escuela y gira a la derecha en la tienda azul."), line("A", "Driver", "Is the house before the park?", "¿La casa está antes del parque?"), line("B", "Marco", "Yes. It's the white house between the pharmacy and the park.", "Sí. Es la casa blanca entre la farmacia y el parque.")],
+        question: "¿Dónde está la casa?", options: ["Entre la farmacia y el parque", "Detrás de la escuela", "Junto a la tienda azul"], answer: 0,
+        chunks: [chunk("drive past", "drive-PAST", "pasa de largo"), chunk("turn right at", "turn-RIGHT-at", "gira a la derecha en"), chunk("between the", "be-TWEEN-thuh", "entre")],
+        responsePrompt: "Describe una casa roja frente al banco.", modelResponse: "It's the red house across from the bank.", modelResponseEs: "Es la casa roja frente al banco."
+      },
+      {
+        title: "Explicar una lesión", context: "Hablas con una enfermera después de una caída.", objective: "Nombrar partes del cuerpo y contar qué pasó.", languageFocus: "I fell · I hurt my… · It is/was swollen",
+        dialogue: [line("A", "Nurse", "What happened to your leg?", "¿Qué le pasó a tu pierna?"), line("B", "Marco", "I fell yesterday and hurt my left knee and ankle.", "Me caí ayer y me lastimé la rodilla y el tobillo izquierdos."), line("A", "Nurse", "Was your ankle swollen last night?", "¿Tu tobillo estaba hinchado anoche?"), line("B", "Marco", "Yes, it was. Today it feels a little better.", "Sí. Hoy se siente un poco mejor.")],
+        question: "¿Qué partes se lastimó?", options: ["Brazo y hombro", "Rodilla y tobillo izquierdos", "Espalda y cuello"], answer: 1,
+        chunks: [chunk("What happened to", "what-HAP-end-tuh", "¿Qué le pasó a?"), chunk("hurt my left knee", "hurt-my-left-NEE", "me lastimé la rodilla izquierda"), chunk("Was it swollen?", "wuz-it-SWO-len", "¿Estaba hinchado?")],
+        responsePrompt: "Di que te caíste y te lastimaste la mano derecha.", modelResponse: "I fell and hurt my right hand.", modelResponseEs: "Me caí y me lastimé la mano derecha."
+      },
+      {
+        title: "Encontrar todo en casa", context: "Alguien cuida tu casa y pregunta dónde están varias cosas.", objective: "Usar in, on, at, over y under con objetos reales.", languageFocus: "in the drawer · on the shelf · under / over · at home",
+        dialogue: [line("A", "Rachel", "Where are the spare keys and the dog's food?", "¿Dónde están las llaves de repuesto y la comida del perro?"), line("B", "Marco", "The keys are in the top drawer, under the phone book.", "Las llaves están en el cajón superior, debajo de la guía telefónica."), line("A", "Rachel", "And the dog food?", "¿Y la comida del perro?"), line("B", "Marco", "It's on the shelf over the washing machine.", "Está en la repisa sobre la lavadora.")],
+        question: "¿Dónde está la comida del perro?", options: ["En el cajón", "En la repisa sobre la lavadora", "Debajo del teléfono"], answer: 1,
+        chunks: [chunk("spare keys", "spair-KEYZ", "llaves de repuesto"), chunk("top drawer", "top-DRAW-er", "cajón superior"), chunk("over the washing machine", "OH-ver-thuh-washing-machine", "sobre la lavadora")],
+        responsePrompt: "Di que el medicamento está en la repisa, sobre el lavabo.", modelResponse: "The medicine is on the shelf over the sink.", modelResponseEs: "El medicamento está en la repisa sobre el lavabo."
+      },
+      {
+        title: "Evaluación de vida real", context: "Resuelves tres necesidades dentro de una conversación natural.", objective: "Escuchar una situación nueva, ubicar información y responder en pasado y futuro.", languageFocus: "past + location + future response",
+        dialogue: [line("A", "Lisa", "The driver called. He went to the old address and is now waiting by the red pharmacy.", "El conductor llamó. Fue al domicilio anterior y ahora espera junto a la farmacia roja."), line("B", "Marco", "That's two blocks from here. I'll call him and give him the new route.", "Eso está a dos cuadras de aquí. Lo llamaré y le daré la nueva ruta."), line("A", "Lisa", "Please tell him to turn left at the bank. Our building is behind it.", "Dile que gire a la izquierda en el banco. Nuestro edificio está detrás."), line("B", "Marco", "Got it. I'll guide him here now.", "Entendido. Lo guiaré hasta aquí ahora.")],
+        question: "¿Dónde espera el conductor?", options: ["Detrás del banco", "Junto a la farmacia roja", "En el nuevo domicilio"], answer: 1,
+        chunks: [chunk("went to the old address", "went-tuh-thee-old-ADDRESS", "fue al domicilio anterior"), chunk("two blocks from here", "two-BLOCKS-frum-here", "a dos cuadras de aquí"), chunk("I'll guide him", "ahl-GUIDE-im", "lo guiaré")],
+        responsePrompt: "Resume dónde está el conductor y qué harás.", modelResponse: "He's by the red pharmacy. I'll call him and explain the route.", modelResponseEs: "Está junto a la farmacia roja. Lo llamaré y le explicaré la ruta."
       },
     ],
   },

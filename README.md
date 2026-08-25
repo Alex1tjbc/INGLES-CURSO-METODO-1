@@ -54,10 +54,10 @@ El nivel de entrada y las metas finales se fijarán después de un diagnóstico.
 
 ## Estado
 
-**Versión:** 1.0 PRO — investigación, currículo de 48 misiones, aplicación independiente y publicación preparada.  
+**Versión:** 1.1 PRO — currículo de 78 misiones en 13 semanas, voces optimizadas y aplicación independiente.  
 **Siguiente hito:** ejecutar el diagnóstico y medir la línea base del usuario.
 
 
 ## Aplicación web
 
-La práctica diaria se realiza fuera del chat en **[CANCHA-48 PRO](https://alex1tjbc.github.io/INGLES-CURSO-METODO-1/)**. La edición independiente incluye diagnóstico auditivo, 48 conversaciones por misiones, velocidad adaptativa, rescate de errores, respuesta oral, repaso programado y progreso guardado únicamente en el dispositivo. El código fuente está en [`web/`](web/) y la versión publicada en la rama [`gh-pages`](../../tree/gh-pages).
+La práctica diaria se realiza fuera del chat en **[CANCHA-48 PRO](https://alex1tjbc.github.io/INGLES-CURSO-METODO-1/)**. La edición independiente incluye diagnóstico auditivo, 78 conversaciones por misiones, selección de voz natural disponible, velocidad adaptativa, rescate de errores, respuesta oral, repaso programado y progreso guardado únicamente en el dispositivo. El código fuente está en [`web/`](web/) y la versión publicada en la rama [`gh-pages`](../../tree/gh-pages).

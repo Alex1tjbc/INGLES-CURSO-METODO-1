@@ -38,16 +38,36 @@ function levelLabel(mode: SupportMode) {
 }
 
 function trainingRate(mode: SupportMode) {
-  if (mode === "guided") return 0.86;
-  if (mode === "challenge") return 1.02;
-  return 0.94;
+  if (mode === "guided") return 0.88;
+  if (mode === "challenge") return 1.04;
+  return 0.96;
 }
 
-function pickVoices() {
+function voiceScore(voice: SpeechSynthesisVoice) {
+  const name = voice.name.toLowerCase();
+  let score = voice.lang.toLowerCase().startsWith("en-us") ? 20 : 8;
+  if (/natural|neural|premium|enhanced/.test(name)) score += 100;
+  if (/google|microsoft|samsung|apple/.test(name)) score += 35;
+  if (/aria|jenny|guy|samantha|ava|allison|serena/.test(name)) score += 25;
+  if (/compact|espeak/.test(name)) score -= 50;
+  if (voice.localService) score += 4;
+  return score;
+}
+
+function englishVoices() {
   if (!("speechSynthesis" in window)) return [];
-  const english = window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith("en"));
-  const american = english.filter((voice) => voice.lang.toLowerCase().startsWith("en-us"));
-  return american.length >= 2 ? american : english;
+  return window.speechSynthesis.getVoices()
+    .filter((voice) => voice.lang.toLowerCase().startsWith("en"))
+    .sort((a, b) => voiceScore(b) - voiceScore(a) || a.name.localeCompare(b.name));
+}
+
+function pickVoices(voices: SpeechSynthesisVoice[], preferredVoiceURI: string) {
+  const preferred = voices.find((voice) => voice.voiceURI === preferredVoiceURI);
+  const first = preferred ?? voices[0];
+  const second = voices.find((voice) => voice.voiceURI !== first?.voiceURI && voice.lang === first?.lang)
+    ?? voices.find((voice) => voice.voiceURI !== first?.voiceURI)
+    ?? first;
+  return first ? [first, second] : [];
 }
 
 export default function AuditoryTrainer() {
@@ -69,6 +89,8 @@ export default function AuditoryTrainer() {
   const [diagnosticAnswers, setDiagnosticAnswers] = useState<number[]>([]);
   const [diagnosticSelection, setDiagnosticSelection] = useState<number | null>(null);
   const [diagnosticChecked, setDiagnosticChecked] = useState(false);
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [preferredVoiceURI, setPreferredVoiceURI] = useState("");
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -90,6 +112,10 @@ export default function AuditoryTrainer() {
         }
       }
     } catch { setProgress(EMPTY_PROGRESS); }
+    setPreferredVoiceURI(window.localStorage.getItem("cancha48-voice-v1") ?? "");
+    const refreshVoices = () => setAvailableVoices(englishVoices());
+    refreshVoices();
+    window.speechSynthesis?.addEventListener?.("voiceschanged", refreshVoices);
     setLoaded(true);
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => undefined);
     setInstalled(window.matchMedia("(display-mode: standalone)").matches);
@@ -100,6 +126,7 @@ export default function AuditoryTrainer() {
     return () => {
       window.removeEventListener("beforeinstallprompt", capturePrompt);
       window.removeEventListener("appinstalled", markInstalled);
+      window.speechSynthesis?.removeEventListener?.("voiceschanged", refreshVoices);
       window.speechSynthesis?.cancel();
     };
   }, []);
@@ -120,8 +147,8 @@ export default function AuditoryTrainer() {
     if (!("speechSynthesis" in window)) { setAudioStatus("La voz no está disponible. Usa Chrome o Edge."); return; }
     cancelledSpeech.current = true; window.speechSynthesis.cancel(); cancelledSpeech.current = false;
     const utterance = new SpeechSynthesisUtterance(item.en);
-    const voices = pickVoices();
-    utterance.lang = "en-US"; utterance.rate = rate; utterance.pitch = item.speaker === "A" ? 1.02 : 0.96;
+    const voices = pickVoices(availableVoices, preferredVoiceURI);
+    utterance.lang = "en-US"; utterance.rate = rate; utterance.pitch = 1;
     utterance.voice = voices[item.speaker === "A" ? 0 : Math.min(1, voices.length - 1)] ?? null;
     utterance.onstart = () => setAudioStatus("Reproduciendo una intervención");
     utterance.onend = () => setAudioStatus("Ahora imítala sin mirar");
@@ -132,16 +159,16 @@ export default function AuditoryTrainer() {
     if (!("speechSynthesis" in window)) { setAudioStatus("La voz no está disponible. Usa Chrome o Edge."); return; }
     cancelledSpeech.current = true; window.speechSynthesis.cancel(); cancelledSpeech.current = false;
     setPlaying(true); setAudioStatus(rate < 0.85 ? "Pase de rescate: escucha los bloques" : "Conversación en curso: no leas");
-    const voices = pickVoices();
+    const voices = pickVoices(availableVoices, preferredVoiceURI);
     const playAt = (index: number) => {
       if (cancelledSpeech.current || index >= item.dialogue.length) {
         setPlaying(false); if (!cancelledSpeech.current) setAudioStatus("Pase terminado. Responde por significado."); return;
       }
       const current = item.dialogue[index];
       const utterance = new SpeechSynthesisUtterance(current.en);
-      utterance.lang = "en-US"; utterance.rate = rate; utterance.pitch = current.speaker === "A" ? 1.03 : 0.96;
+      utterance.lang = "en-US"; utterance.rate = rate; utterance.pitch = 1;
       utterance.voice = voices[current.speaker === "A" ? 0 : Math.min(1, voices.length - 1)] ?? null;
-      utterance.onend = () => window.setTimeout(() => playAt(index + 1), 260);
+      utterance.onend = () => window.setTimeout(() => playAt(index + 1), current.en.endsWith("?") ? 170 : 120);
       utterance.onerror = () => { setPlaying(false); setAudioStatus("No se pudo completar el audio. Intenta de nuevo."); };
       window.speechSynthesis.speak(utterance);
     };
@@ -216,6 +243,12 @@ export default function AuditoryTrainer() {
     setRecording(false); setAudioStatus("Escúchate una vez y evalúa si tu mensaje fue claro.");
   }
 
+  function chooseVoice(voiceURI: string) {
+    setPreferredVoiceURI(voiceURI);
+    window.localStorage.setItem("cancha48-voice-v1", voiceURI);
+    setAudioStatus(voiceURI ? "Voz preferida guardada. Prueba el pase natural." : "Selección automática activada.");
+  }
+
   async function installApp() {
     if (!installPrompt) return;
     await installPrompt.prompt(); const choice = await installPrompt.userChoice;
@@ -255,19 +288,19 @@ export default function AuditoryTrainer() {
 
       {tab === "train" && (
         <section className="workspace" aria-labelledby="mission-title">
-          <div className="lesson-heading"><div className="mission-meta"><span>Semana {mission.week} · Misión {mission.day}</span><span>18–25 min</span></div><h2 id="mission-title">{mission.title}</h2><p>{mission.context}</p><div className="mission-objective"><strong>Objetivo operativo</strong><span>{mission.objective}</span></div></div>
-          <div className="audio-stage"><p className="step-label">1 · Lectura del juego</p><p className="stage-instruction">Escucha la conversación completa sin leer. Busca quién, qué cambió y qué debe ocurrir.</p><div className="audio-actions"><button className="primary-action" onClick={() => playDialogue(mission, trainingRate(progress.supportMode))} disabled={playing}><span className="play-mark">▶</span>{playing ? "Conversación en curso" : "Pase natural"}</button>{checked && selectedAnswer !== mission.answer && <button className="secondary-action" onClick={() => playDialogue(mission, 0.78)}>Pase de rescate</button>}</div><p className="audio-status" aria-live="polite">{audioStatus}</p></div>
+          <div className="lesson-heading"><div className="mission-meta"><span>Semana {mission.week} · Misión {mission.day}</span><span>18–25 min</span></div><h2 id="mission-title">{mission.title}</h2><p>{mission.context}</p><div className="mission-objective"><strong>Objetivo operativo</strong><span>{mission.objective}</span></div>{mission.languageFocus && <div className="language-focus"><strong>Patrón útil</strong><span>{mission.languageFocus}</span></div>}</div>
+          <div className="audio-stage"><p className="step-label">1 · Lectura del juego</p><p className="stage-instruction">Escucha la conversación completa sin leer. Busca quién, qué cambió y qué debe ocurrir.</p><div className="audio-actions"><button className="primary-action" onClick={() => playDialogue(mission, trainingRate(progress.supportMode))} disabled={playing}><span className="play-mark">▶</span>{playing ? "Conversación en curso" : "Pase natural"}</button>{checked && selectedAnswer !== mission.answer && <button className="secondary-action" onClick={() => playDialogue(mission, 0.8)}>Pase de rescate</button>}</div><div className="voice-tools"><label htmlFor="voice-choice">Voz del entrenador</label><select id="voice-choice" value={preferredVoiceURI} onChange={(event) => chooseVoice(event.target.value)}><option value="">Automática · mejor disponible</option>{availableVoices.map((voice) => <option key={voice.voiceURI} value={voice.voiceURI}>{voice.name} · {voice.lang}</option>)}</select><span>{availableVoices.length ? "Se priorizan voces Natural, Premium, Google o Microsoft." : "Android cargará las voces disponibles al reproducir."}</span></div><p className="audio-status" aria-live="polite">{audioStatus}</p></div>
           <div className="meaning-check"><p className="step-label">2 · Decisión por significado</p><h3>{mission.question}</h3><div className="option-grid">{mission.options.map((option, index) => { const state = checked ? index === mission.answer ? " correct" : index === selectedAnswer ? " wrong" : "" : selectedAnswer === index ? " selected" : ""; return <button key={option} className={`answer-option${state}`} onClick={() => !checked && setSelectedAnswer(index)}>{option}</button>; })}</div>{!checked ? <button className="check-action" disabled={selectedAnswer === null} onClick={checkAnswer}>Comprobar comprensión</button> : <div className={selectedAnswer === mission.answer ? "feedback success" : "feedback repair"}><strong>{selectedAnswer === mission.answer ? "Comprensión correcta" : "Necesita reparación"}</strong><span>{selectedAnswer === mission.answer ? "Captaste el dato esencial. Ahora comprueba cómo sonó." : "No memorices la respuesta. Usa el pase de rescate y escucha los bloques con fuerza."}</span></div>}</div>
           {checked && <div className="study-panel"><div className="study-toolbar"><div><p className="step-label">3 · Video mental y forma sonora</p><h3>Reconstruye la escena</h3></div><button className="transcript-toggle" onClick={() => setShowTranscript((value) => !value)}>{showTranscript ? "Ocultar diálogo" : "Mostrar diálogo"}</button></div>{showTranscript && <div className="dialogue-transcript">{mission.dialogue.map((item, index) => <article key={`${item.speaker}-${index}`} className={`dialogue-line speaker-${item.speaker.toLowerCase()}`}><div className="speaker-badge">{item.name}</div><div><p>{item.en}</p><span>{item.es}</span></div><button aria-label={`Escuchar intervención de ${item.name}`} onClick={() => speakLine(item, 0.9)}>▶</button></article>)}<button className="inline-play replay-full" onClick={() => playDialogue(mission, 0.92)}>Escuchar otra vez con el texto</button></div>}<div className="chunk-grid">{mission.chunks.map((item) => <article key={item.written}><strong>{item.written}</strong><b>{item.heard}</b><span>{item.meaning}</span></article>)}</div></div>}
           {checked && <div className="speaking-block pro-speaking"><p className="step-label">4 · Tu turno</p><h3>{mission.responsePrompt}</h3><p>Responde primero sin mirar. Después compara tu mensaje con el modelo; no necesitas imitar el acento.</p><div className="response-actions"><button className={recording ? "recording-action" : "record-action"} onClick={recording ? stopRecording : startRecording}>{recording ? "Detener grabación" : "Grabar mi respuesta"}</button><button className="secondary-action" onClick={() => setShowModel((value) => !value)}>{showModel ? "Ocultar modelo" : "Comparar con modelo"}</button></div>{recordingUrl && <audio controls src={recordingUrl} aria-label="Tu respuesta grabada" />}{showModel && <div className="model-card"><div><strong>{mission.modelResponse}</strong><span>{mission.modelResponseEs}</span></div><button onClick={() => speakLine({ speaker: "B", en: mission.modelResponse }, 0.9)}>▶</button></div>}<div className="confidence-check"><p>Termina calificando tu capacidad real, no tu acento:</p><div><button onClick={() => finishMission(1)}>Necesité leer</button><button onClick={() => finishMission(2)}>Respondí con esfuerzo</button><button onClick={() => finishMission(3)}>Respondí sin apoyo</button></div></div></div>}
         </section>
       )}
 
-      {tab === "route" && <section className="lesson-list" aria-labelledby="route-title"><div className="section-heading"><p className="eyebrow">Ruta funcional · 8 semanas</p><h2 id="route-title">{week.title}</h2><p>{week.objective}</p></div><div className="route-summary"><span>48 misiones conversacionales</span><span>5 días de avance + 1 de repaso</span><span>18–25 min por sesión</span></div><div className="week-picker" aria-label="Elegir semana">{TRAINING_WEEKS.map((item) => { const done = item.missions.filter((entry) => progress.completed.includes(entry.id)).length; return <button key={item.number} className={selectedWeek === item.number ? "active" : ""} onClick={() => setSelectedWeek(item.number)}><strong>{item.number}</strong><span>{done}/6</span></button>; })}</div><div className="lesson-grid">{week.missions.map((item) => { const done = progress.completed.includes(item.id); const review = progress.reviewDue.includes(item.id); return <button key={item.id} className="lesson-card" onClick={() => chooseMission(item)}><span className={done ? "day done" : "day"}>{done ? "✓" : item.day}</span><span><strong>{item.title}</strong><small>{item.context}</small>{review && <em>Repaso recomendado</em>}</span><span className="arrow">→</span></button>; })}</div></section>}
+      {tab === "route" && <section className="lesson-list" aria-labelledby="route-title"><div className="section-heading"><p className="eyebrow">Ruta funcional · {TRAINING_WEEKS.length} semanas</p><h2 id="route-title">{week.title}</h2><p>{week.objective}</p></div><div className="route-summary"><span>{ALL_MISSIONS.length} misiones conversacionales</span><span>5 días de avance + 1 de integración</span><span>18–25 min por sesión</span></div><div className="week-picker" aria-label="Elegir semana">{TRAINING_WEEKS.map((item) => { const done = item.missions.filter((entry) => progress.completed.includes(entry.id)).length; return <button key={item.number} className={selectedWeek === item.number ? "active" : ""} onClick={() => setSelectedWeek(item.number)}><strong>{item.number}</strong><span>{done}/6</span></button>; })}</div><div className="lesson-grid">{week.missions.map((item) => { const done = progress.completed.includes(item.id); const review = progress.reviewDue.includes(item.id); return <button key={item.id} className="lesson-card" onClick={() => chooseMission(item)}><span className={done ? "day done" : "day"}>{done ? "✓" : item.day}</span><span><strong>{item.title}</strong><small>{item.context}</small>{item.languageFocus && <em>{item.languageFocus}</em>}{review && <em>Repaso recomendado</em>}</span><span className="arrow">→</span></button>; })}</div></section>}
 
-      {tab === "progress" && <section className="progress-view" aria-labelledby="progress-title"><div className="section-heading"><p className="eyebrow">Medición funcional</p><h2 id="progress-title">Tu avance auditivo</h2><p>Se mide comprensión de significado, recuperación de errores y capacidad para responder. No se premia memorizar transcripciones.</p></div><div className="metric-grid pro-metrics"><article><span>Misiones entrenadas</span><strong>{progress.completed.length}/48</strong></article><article><span>Comprensión acumulada</span><strong>{average}%</strong></article><article><span>Repasos pendientes</span><strong>{progress.reviewDue.length}</strong></article><article><span>Reproducciones</span><strong>{Object.values(progress.attempts).reduce((sum, value) => sum + value, 0)}</strong></article></div><div className="baseline-card"><div><span>Nivel de entrada</span><strong>{progress.baselineScore}/3 · {levelLabel(progress.supportMode)}</strong></div><p>La velocidad inicial se adapta a este resultado. Los errores pasan automáticamente a la cola de repaso.</p></div><div className="progress-table">{TRAINING_WEEKS.map((item) => { const completed = item.missions.filter((entry) => progress.completed.includes(entry.id)).length; return <button key={item.number} onClick={() => { setSelectedWeek(item.number); setTab("route"); }}><span>Semana {item.number} · {item.title}</span><strong>{completed}/6</strong></button>; })}</div><div className="data-actions"><button className="backup-action" onClick={exportProgress}>Descargar respaldo</button><button className="reset-action" onClick={() => { if (window.confirm("¿Deseas borrar la evaluación y todo el progreso de este dispositivo?")) { window.localStorage.removeItem("cancha48-progress-v2"); setProgress(EMPTY_PROGRESS); setTab("train"); } }}>Reiniciar desde diagnóstico</button></div></section>}
+      {tab === "progress" && <section className="progress-view" aria-labelledby="progress-title"><div className="section-heading"><p className="eyebrow">Medición funcional</p><h2 id="progress-title">Tu avance auditivo</h2><p>Se mide comprensión de significado, recuperación de errores y capacidad para responder. No se premia memorizar transcripciones.</p></div><div className="metric-grid pro-metrics"><article><span>Misiones entrenadas</span><strong>{progress.completed.length}/{ALL_MISSIONS.length}</strong></article><article><span>Comprensión acumulada</span><strong>{average}%</strong></article><article><span>Repasos pendientes</span><strong>{progress.reviewDue.length}</strong></article><article><span>Reproducciones</span><strong>{Object.values(progress.attempts).reduce((sum, value) => sum + value, 0)}</strong></article></div><div className="baseline-card"><div><span>Nivel de entrada</span><strong>{progress.baselineScore}/3 · {levelLabel(progress.supportMode)}</strong></div><p>La velocidad inicial se adapta a este resultado. Los errores pasan automáticamente a la cola de repaso.</p></div><div className="progress-table">{TRAINING_WEEKS.map((item) => { const completed = item.missions.filter((entry) => progress.completed.includes(entry.id)).length; return <button key={item.number} onClick={() => { setSelectedWeek(item.number); setTab("route"); }}><span>Semana {item.number} · {item.title}</span><strong>{completed}/6</strong></button>; })}</div><div className="data-actions"><button className="backup-action" onClick={exportProgress}>Descargar respaldo</button><button className="reset-action" onClick={() => { if (window.confirm("¿Deseas borrar la evaluación y todo el progreso de este dispositivo?")) { window.localStorage.removeItem("cancha48-progress-v2"); setProgress(EMPTY_PROGRESS); setTab("train"); } }}>Reiniciar desde diagnóstico</button></div></section>}
 
-      {tab === "method" && <section className="method-view" aria-labelledby="method-title"><div className="section-heading"><p className="eyebrow">Fundamento, no promesa rápida</p><h2 id="method-title">Por qué funciona este entrenamiento</h2><p>Los deportistas no reciben un método secreto. Progresan porque practican lenguaje limitado y urgente dentro del mismo contexto, reciben corrección inmediata y lo usan todos los días. CANCHA‑48 convierte esas condiciones en una rutina personal.</p></div><div className="principle-grid"><article><span>01</span><div><strong>Misión real</strong><p>Cada sesión termina en una decisión o respuesta, como una indicación de juego.</p></div></article><article><span>02</span><div><strong>Input comprensible</strong><p>Primero escuchas natural; el rescate lento aparece sólo cuando lo necesitas.</p></div></article><article><span>03</span><div><strong>Variabilidad</strong><p>Personas, números y contextos cambian para evitar que memorices una sola voz.</p></div></article><article><span>04</span><div><strong>Recuperación activa</strong><p>Debes elegir significado y responder antes de ver el modelo.</p></div></article><article><span>05</span><div><strong>Repaso adaptativo</strong><p>Los errores y respuestas con apoyo vuelven a aparecer; los aciertos sólidos avanzan.</p></div></article></div><div className="method-warning"><strong>Meta honesta</strong><p>Este ciclo no promete “hablar inglés en semanas”. Entrena comprensión y respuesta funcional en 48 situaciones de alta utilidad. La velocidad depende de práctica frecuente, exposición y uso real.</p></div><div className="research-list"><h3>Evidencia utilizada</h3>{RESEARCH_LINKS.map((source) => <a key={source.href} href={source.href} target="_blank" rel="noreferrer"><strong>{source.title}</strong><span>{source.note}</span><b>↗</b></a>)}</div></section>}
+      {tab === "method" && <section className="method-view" aria-labelledby="method-title"><div className="section-heading"><p className="eyebrow">Fundamento, no promesa rápida</p><h2 id="method-title">Por qué funciona este entrenamiento</h2><p>Los deportistas no reciben un método secreto. Progresan porque practican lenguaje limitado y urgente dentro del mismo contexto, reciben corrección inmediata y lo usan todos los días. CANCHA‑48 convierte esas condiciones en una rutina personal.</p></div><div className="principle-grid"><article><span>01</span><div><strong>Misión real</strong><p>Cada sesión termina en una decisión o respuesta, como una indicación de juego.</p></div></article><article><span>02</span><div><strong>Input comprensible</strong><p>Primero escuchas natural; el rescate lento aparece sólo cuando lo necesitas.</p></div></article><article><span>03</span><div><strong>Variabilidad</strong><p>Personas, números y contextos cambian para evitar que memorices una sola voz.</p></div></article><article><span>04</span><div><strong>Recuperación activa</strong><p>Debes elegir significado y responder antes de ver el modelo.</p></div></article><article><span>05</span><div><strong>Gramática en contexto</strong><p>To be, preposiciones, pasado y futuro aparecen dentro de conversaciones reales y después se nombran.</p></div></article><article><span>06</span><div><strong>Repaso adaptativo</strong><p>Los errores y respuestas con apoyo vuelven a aparecer; los aciertos sólidos avanzan.</p></div></article></div><div className="method-warning"><strong>Meta honesta</strong><p>Este ciclo no promete “hablar inglés en semanas”. Entrena comprensión y respuesta funcional en {ALL_MISSIONS.length} situaciones de alta utilidad. La velocidad depende de práctica frecuente, exposición y uso real.</p></div><div className="research-list"><h3>Evidencia utilizada</h3>{RESEARCH_LINKS.map((source) => <a key={source.href} href={source.href} target="_blank" rel="noreferrer"><strong>{source.title}</strong><span>{source.note}</span><b>↗</b></a>)}</div></section>}
 
       <footer><span>CANCHA‑48 PRO · ciclo funcional</span><span>Escucha · decide · responde · repite</span></footer>
     </main>
